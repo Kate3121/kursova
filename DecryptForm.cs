@@ -27,13 +27,31 @@ namespace Курсова
                 MessageBox.Show("Будь ласка, заповніть поле для введення тексту.");
                 return;
             }
-            System.IO.File.WriteAllText("close.txt", txtEncrypted.Text);
-            rsa.Decrypt("close.txt", "out.txt");
-            var decrypted = System.IO.File.ReadAllText("out.txt");
-            tbOut.Text = decrypted;
-            Logger.Log("rsa", "Розшифровано повідомлення");
-            Program.IncrementAction();
+
+            try
+            {
+                // Декодируем строку из Base64 обратно в байты
+                var encryptedBytes = Convert.FromBase64String(txtEncrypted.Text);
+
+                // Расшифровываем
+                var decryptedBytes = rsa.DecryptBytes(encryptedBytes);
+                var decryptedText = Encoding.UTF8.GetString(decryptedBytes);
+
+                tbOut.Text = decryptedText;
+                Logger.Log("rsa", "Розшифровано повідомлення");
+                Program.IncrementAction();
+            }
+            catch (FormatException)
+            {
+                MessageBox.Show("Введений текст не є коректною Base64-строкою.");
+            }
+            catch (CryptographicException ex)
+            {
+                MessageBox.Show("Помилка дешифрування: " + ex.Message);
+            }
         }
+
+
 
         private void btnBack_Click(object sender, EventArgs e)
         {
