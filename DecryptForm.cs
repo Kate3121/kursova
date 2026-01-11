@@ -18,6 +18,7 @@ namespace Курсова
         {
             InitializeComponent();
             rsa = rsaService;
+            rsa.LoadPrivateKey();
         }
 
         private void btnDecrypt_Click(object sender, EventArgs e)
@@ -30,14 +31,19 @@ namespace Курсова
 
             try
             {
-                // Декодируем строку из Base64 обратно в байты
-                var encryptedBytes = Convert.FromBase64String(txtEncrypted.Text);
+                byte[] encryptedBytes = Convert.FromBase64String(txtEncrypted.Text);
+                int blockSize = rsa.KeySize / 8; 
+                List<byte> decryptedData = new List<byte>();
 
-                // Расшифровываем
-                var decryptedBytes = rsa.DecryptBytes(encryptedBytes);
-                var decryptedText = Encoding.UTF8.GetString(decryptedBytes);
+                for (int i = 0; i < encryptedBytes.Length; i += blockSize)
+                {
+                    byte[] block = new byte[blockSize];
+                    Array.Copy(encryptedBytes, i, block, 0, blockSize);
 
-                tbOut.Text = decryptedText;
+                    byte[] decryptedBlock = rsa.DecryptBytes(block);
+                    decryptedData.AddRange(decryptedBlock);
+                }
+                tbOut.Text = Encoding.UTF8.GetString(decryptedData.ToArray()); ;
                 Logger.Log("rsa", "Розшифровано повідомлення");
                 Program.IncrementAction();
             }
@@ -51,13 +57,9 @@ namespace Курсова
             }
         }
 
-
-
         private void btnBack_Click(object sender, EventArgs e)
         {
             this.Close();
-            MainForm mainForm = new MainForm();
-            mainForm.Show();
         }
     }
 }

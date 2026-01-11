@@ -20,11 +20,13 @@ namespace Курсова
         {
             InitializeComponent();
             rsa = rsaService;
+            rsa.LoadPrivateKey();
 
         }
 
         private void btnEncrypt_Click(object sender, EventArgs e)
         {
+            rsa.SaveKeys();
             if (string.IsNullOrWhiteSpace(txtInput.Text))
             {
                 MessageBox.Show("Будь ласка, заповніть поле для введення тексту.");
